@@ -26,20 +26,20 @@ Hit Render_World::Closest_Intersection(const Ray& ray)
     double min_t = std::numeric_limits<double>::max();
     Hit closest_hit; Hit hit;
     closest_hit = {0, 0, 0};
-    for (size_t i = 0; i < objects.size(); i++)
-    {
-        hit = objects.at(i)->Intersection(ray, 0);
-        if(hit.object != 0) {
-            if(hit.dist < min_t && hit.dist >= small_t) {closest_hit = hit;}
-        }  
-    }
-    
-    // for(auto i : objects) {
-    //     hit = i->Intersection(ray, 0);
+    // for (size_t i = 0; i < objects.size(); i++)
+    // {
+    //     hit = objects.at(i)->Intersection(ray, 0);
     //     if(hit.object != 0) {
     //         if(hit.dist < min_t && hit.dist >= small_t) {closest_hit = hit;}
-    //     }
+    //     }  
     // }
+    
+    for(auto i : objects) {
+        hit = i->Intersection(ray, 0);
+        if(hit.object != 0) {
+            if(hit.dist < min_t && hit.dist >= small_t) {closest_hit = hit; min_t = hit.dist;}
+        }
+    }
 
     return closest_hit;
     //return {};

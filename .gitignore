@@ -1,7 +1,8 @@
 
 /grading
 .sconsign.dblite
-.png
+*.png
+./vscode
 # Prerequisites
 *.d
 
