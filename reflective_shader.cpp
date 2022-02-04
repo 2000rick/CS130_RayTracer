@@ -7,7 +7,9 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
     const vec3& normal,int recursion_depth) const
 {
     vec3 color; 
+    //base case
     color = (1-reflectivity) * shader->Shade_Surface(ray, intersection_point, normal, recursion_depth);
+    //recursion
     if(recursion_depth < world.recursion_depth_limit) {
         color = shader->Shade_Surface(ray, intersection_point, normal, recursion_depth); //Phong shading
         vec3 u = ray.direction;
