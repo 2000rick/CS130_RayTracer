@@ -43,8 +43,9 @@ void Mesh::Read_Obj(const char* file)
 Hit Mesh::Intersection(const Ray& ray, int part) const
 {
     Hit closest = {0,std::numeric_limits<double>::max(),0};
+    double dist = std::numeric_limits<double>::max();
+
     for(int i = 0; i < triangles.size(); ++i) {
-        double dist = std::numeric_limits<double>::max();
         if( Intersect_Triangle(ray, i, dist) ) {
             closest = {this, dist, i};
             return closest;
@@ -60,7 +61,9 @@ vec3 Mesh::Normal(const vec3& point, int part) const
     assert(part>=0);
     ivec3 x = triangles.at(part); //triangle with index part
     //normal is (B-A)x(C-A) normalized
-    vec3 normal = cross( vertices.at(x[1])-vertices.at(x[0]), vertices.at(x[2])-vertices.at(x[0]) ).normalized();
+    vec3 normal = cross( vertices.at(x[1])-vertices.at(x[0]), vertices.at(x[2])-vertices.at(x[0]) );
+    normal = normal.normalized();
+
     return normal; 
 }
 
@@ -80,26 +83,32 @@ bool Mesh::Intersect_Triangle(const Ray& ray, int tri, double& dist) const
 {
     vec3 normal = Normal(ray.endpoint, tri);
     double uDotn = dot(ray.direction, normal);
-    if(uDotn > -small_t && uDotn < small_t) return false; //0 or inf intersections, treat as no intersection
+    if(uDotn > -small_t && uDotn < small_t) {
+        return false; //0 or inf intersections, treat as no intersection
+    } 
+
     vec3 A = vertices.at(triangles.at(tri)[0]); //point A of triangle
     double t = dot(A - ray.endpoint, normal) / uDotn;
     if(t > small_t) {
-        dist = t;      //intersection and t is at least small_t
+        dist = t;
     } 
     else { //t is too small
         return false;
     }
 
+    //barycentric weight = area(subTriangleP)/area(ABC)
+    //area = 1.0/2.0 * dot( (B-A)x(C-A), n)
     vec3 P = ray.Point(t); //point P (intersection)
     double alpha, beta, gamma;
-    //barycentric weight = area(ABP)/area(ABC)
-    //area = 1.0/2.0 * dot( (B-A)x(C-A), n)
     ivec3 x = triangles.at(tri); //triangle with index tri
-    vec3 B = vertices.at(x[1]); vec3 C = vertices.at(x[2]);
+    vec3 B = vertices.at(x[1]); 
+    vec3 C = vertices.at(x[2]);
     double triArea = dot(cross(B-A, C-A) , normal);
+
     alpha = dot(cross(B-P, C-P) , normal) / triArea;
     beta = dot(cross(P-A, C-A) , normal) / triArea;
     gamma = 1.0 - alpha - beta;
+
     if(alpha > -weight_tolerance && beta > -weight_tolerance && gamma > -weight_tolerance) {
         return true;
     }
